@@ -82,10 +82,9 @@ public class JwtTokenUtils implements Serializable {
 		Map<String, Object> claims = new HashMap<>();
 
 		claims.put("id", utilisateurVo.getId());
-		claims.put("nom", utilisateurVo.getNom());
-		claims.put("prenoms", utilisateurVo.getPrenoms());
+		claims.put("nomPrenoms", utilisateurVo.getNomPrenoms());
+		claims.put("email", utilisateurVo.getEmail());
 		claims.put("username", utilisateurVo.getUsername());
-		claims.put("actif", utilisateurVo.isActif());
 
 		return doGenerateToken(claims, utilisateurVo.getUsername());
 	}

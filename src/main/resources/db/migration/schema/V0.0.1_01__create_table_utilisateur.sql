@@ -7,12 +7,10 @@ CREATE TABLE utilisateur
     create_at               TIMESTAMP NOT NULL,
     update_by               VARCHAR(255) NULL,
     update_at               TIMESTAMP NULL,
-    nom                     VARCHAR(50)  NOT NULL,
-    prenoms                 VARCHAR(255) NOT NULL,
+    nom_prenoms             VARCHAR(255) NOT NULL,
     username                VARCHAR(255) NOT NULL CONSTRAINT username_reference_uk UNIQUE,
     email                   VARCHAR(255) NOT NULL CONSTRAINT email_reference_uk UNIQUE,
     password                VARCHAR(255) NOT NULL,
-    codeotp                 VARCHAR(6) NULL,
     actif                   BOOLEAN,
     role                    VARCHAR(255) NOT NULL
 );

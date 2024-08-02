@@ -1,15 +1,12 @@
 package com.auth.twofactor.configuration;
 
 import com.auth.twofactor.domain.Utilisateur;
-import com.auth.twofactor.presentation.CodeOTPVo;
-import com.auth.twofactor.presentation.GenerationCodeOTPVo;
 import com.auth.twofactor.presentation.TokenVo;
 import com.auth.twofactor.presentation.UsernamePasswordVo;
 import com.auth.twofactor.presentation.UtilisateurVo;
 import com.auth.twofactor.repository.UtilisateurRepository;
-import com.auth.twofactor.service.GenererCodeOTPService;
-import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,12 +23,10 @@ public class SecurityService implements UserDetailsService {
 
 	private final JwtTokenUtils jwtTokenUtils;
 	private final UtilisateurRepository utilisateurRepository;
-	private final GenererCodeOTPService genererCodeOTPService;
 
-	public SecurityService(JwtTokenUtils jwtTokenUtils, UtilisateurRepository utilisateurRepository, GenererCodeOTPService genererCodeOTPService) {
+	public SecurityService(JwtTokenUtils jwtTokenUtils, UtilisateurRepository utilisateurRepository) {
 		this.jwtTokenUtils = jwtTokenUtils;
 		this.utilisateurRepository = utilisateurRepository;
-		this.genererCodeOTPService = genererCodeOTPService;
 	}
 
 	/**
@@ -56,7 +51,8 @@ public class SecurityService implements UserDetailsService {
 		Optional<Utilisateur> optionalUtilisateur = utilisateurRepository.findByUsername(username);
 		if (optionalUtilisateur.isPresent()) {
 			return optionalUtilisateur.get().buildUser();
-		} else {
+		}
+		else {
 			throw new UsernameNotFoundException("Aucun utilisateur trouvé pour le username: " + username);
 		}
 	}
@@ -80,23 +76,15 @@ public class SecurityService implements UserDetailsService {
 		throw new UsernameNotFoundException("Aucun utilisateur trouvé pour le username: " + username);
 	}
 
-	@Transactional
-	public void authentifierUtilisateurPourLaPremiereFois(UsernamePasswordVo usernamePasswordVo) throws Exception {
-		try {
-			Utilisateur utilisateur = rechercherutilisateurParUsernameEtPassword(usernamePasswordVo.getUsername(), usernamePasswordVo.getPassword());
-			GenerationCodeOTPVo generationCodeOTPVo = new GenerationCodeOTPVo(utilisateur.getEmail());
-			CodeOTPVo codeOTPVo = genererCodeOTPService.genererCodeOtp(generationCodeOTPVo);
-			utilisateur.setCodeOtp(codeOTPVo.getCode());
-			utilisateurRepository.save(utilisateur);
-		}
-		catch (Exception e) {
-			throw new Exception();
-		}
+	// TODO: docs à faire
+	public TokenVo authentifierUtilisateur(UsernamePasswordVo usernamePasswordVo) {
+		Utilisateur utilisateur = rechercherutilisateurParUsernameEtPassword(
+				usernamePasswordVo.getUsername(),
+				usernamePasswordVo.getPassword()
+		);
+		SecurityContextHolder.clearContext();
+		String token = genererTokenJwt(new UtilisateurVo(utilisateur));
 
-	}
-
-	public TokenVo genererToken(UtilisateurVo utilisateurVo) {
-		String token = genererTokenJwt(utilisateurVo);
 		return new TokenVo(StringUtils.join(of("Bearer", token), " "));
 	}
 
@@ -111,10 +99,6 @@ public class SecurityService implements UserDetailsService {
 		return getEncoder().matches(password, encodePassword);
 	}
 
-	private boolean comparerCodeOtp(String codeUtilisateur, String vraiCode) {
-		return codeUtilisateur.equals(vraiCode);
-	}
-
 	/**
 	 * Crypte le mot de passe de l'utilisateur.
 	 *
@@ -125,21 +109,9 @@ public class SecurityService implements UserDetailsService {
 		return getEncoder().encode(password);
 	}
 
+	// TODO: docs à faire
 	private BCryptPasswordEncoder getEncoder() {
 		int strength = 10;
 		return new BCryptPasswordEncoder(strength, new SecureRandom());
-	}
-
-	public TokenVo authentifierUtilisateurPourLaSecondeFois(String code) throws Exception {
-		Optional<Utilisateur> utilisateurOptional = utilisateurRepository.findByCodeOtp(code);
-
-		if (utilisateurOptional.isPresent()) {
-			Utilisateur utilisateur = utilisateurOptional.get();
-			if (comparerCodeOtp(code, utilisateur.getCodeOtp())) {
-				return genererToken(new UtilisateurVo(utilisateur));
-			}
-			throw new Exception();
-		}
-		return null;
 	}
 }

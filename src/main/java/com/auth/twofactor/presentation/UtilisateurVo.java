@@ -12,15 +12,12 @@ public class UtilisateurVo {
     private Long id;
 
     @NotNull
-    private String nom;
-
-    @NotNull
-    private String prenoms;
+    private String nomPrenoms;
 
     @NotNull
     private String username;
 
-    private boolean actif;
+    private String email;
 
     @NotBlank
     private String password;
@@ -38,17 +35,15 @@ public class UtilisateurVo {
      */
     public UtilisateurVo(Utilisateur utilisateur) {
         this.id = utilisateur.getId();
-        this.nom = utilisateur.getNom();
-        this.prenoms = utilisateur.getPrenoms();
+        this.nomPrenoms = utilisateur.getNomPrenoms();
         this.username = utilisateur.getUsername();
-        this.actif = utilisateur.isActif();
+        this.email = utilisateur.getEmail();
         this.password = utilisateur.getPassword();
     }
 
-    public UtilisateurVo(Long id, String nom, String prenoms, String username, String password) {
+    public UtilisateurVo(Long id, String nomPrenoms, String username, String password) {
         this.id = id;
-        this.nom = nom;
-        this.prenoms = prenoms;
+        this.nomPrenoms = nomPrenoms;
         this.username = username;
         this.password = password;
     }
@@ -57,20 +52,36 @@ public class UtilisateurVo {
         return id;
     }
 
-    public String getNom() {
-        return nom;
-    }
-
-    public String getPrenoms() {
-        return prenoms;
-    }
-
     public String getUsername() {
         return username;
     }
 
-    public boolean isActif() {
-        return actif;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public @NotNull String getNomPrenoms() {
+        return nomPrenoms;
+    }
+
+    public void setNomPrenoms(@NotNull String nomPrenoms) {
+        this.nomPrenoms = nomPrenoms;
+    }
+
+    public void setUsername(@NotNull String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(@NotBlank String password) {
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {
